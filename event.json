@@ -1,0 +1,8 @@
+{
+  "body": {
+    "query": "query shortToUrl($shortCode: String) { shortToURL(short: $shortCode){shortCode, url,} }",
+    "variables": {
+      "shortCode": "short"
+    }
+  }
+}
