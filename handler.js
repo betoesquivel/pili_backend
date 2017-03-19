@@ -1,5 +1,6 @@
 'use strict';
 
+
 module.exports.graphql = (event, context, callback) => {
   const response = {
     statusCode: 200,

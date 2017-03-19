@@ -1,0 +1,13 @@
+{
+  "name": "pili_backend",
+  "version": "1.0.0",
+  "description": "AWS Lambda based GraphQL endpoint for URL shortener service.",
+  "main": "handler.js",
+  "repository": "git@github.com:betoesquivel/pili_backend.git",
+  "author": "Beto Esquivel <ppbeto94@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "graphql": "^0.9.1",
+    "graphql-tools": "^0.10.1"
+  }
+}
