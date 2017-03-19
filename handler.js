@@ -51,19 +51,26 @@ const variablesTest = { shortCode: 'short' };
 module.exports.response = graphql(schema, queryTest, variablesTest);
 
 module.exports.graphql = (event, context, callback) => {
-  const getQuery = R.compose(
-    R.prop('query'),
+  const parseBody = R.compose(
     JSON.parse,
     R.prop('body')
   );
-  const query = getQuery(event);
-  const response = {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: `Query received:${query}`,
-      input: event,
-    }),
-  };
 
-  callback(null, response);
+  const body = parseBody(event);
+  const query = R.prop('query', body);
+  const variables = R.prop('variables', body);
+  const queryPromise = graphql(schema, query, variables);
+
+  queryPromise.then(result => {
+    const response = {
+      statusCode: 200,
+      body: JSON.stringify({
+        query: query,
+        variables: variables,
+        result: result,
+      }),
+    };
+
+    callback(null, response);
+  });
 };
