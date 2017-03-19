@@ -1,11 +1,39 @@
 'use strict';
 
+const R = require('ramda');
+//const graphql = require('graphql').graphql;
+
+//const tools = require('graphql-tools');
+//const makeExecutableSchema = tools.makeExecutableSchema;
+//const addMockFunctionsToSchema = tools.addMockFunctionsToSchema;
+
+//const schemaString = `
+
+//`;
+
+//const schema = makeExecutableSchema({
+  //typeDefs: schemaString,
+//});
+
+//addMockFunctionsToSchema({ schema });
+
+//const query = `
+//query something {
+
+//}
+//`;
 
 module.exports.graphql = (event, context, callback) => {
+  const getQuery = R.compose(
+    R.prop('query'),
+    JSON.parse,
+    R.prop('body')
+  );
+  const query = getQuery(event);
   const response = {
     statusCode: 200,
     body: JSON.stringify({
-      message: 'Posted to the graphql endpoint',
+      message: `Query received:${query}`,
       input: event,
     }),
   };
