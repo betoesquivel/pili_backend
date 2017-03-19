@@ -1,27 +1,54 @@
 'use strict';
 
 const R = require('ramda');
-//const graphql = require('graphql').graphql;
+const graphql = require('graphql').graphql;
 
-//const tools = require('graphql-tools');
-//const makeExecutableSchema = tools.makeExecutableSchema;
-//const addMockFunctionsToSchema = tools.addMockFunctionsToSchema;
+const tools = require('graphql-tools');
+const makeExecutableSchema = tools.makeExecutableSchema;
+const addMockFunctionsToSchema = tools.addMockFunctionsToSchema;
 
-//const schemaString = `
+const schemaString = `
 
-//`;
+type ShortURL {
+  id: String!
+  shortCode: String!
+  url: String!
+  owner: String
+  visits: Int
+  lastVisited: String
+  lastUpdated: String
+  createdOn: String
+}
 
-//const schema = makeExecutableSchema({
-  //typeDefs: schemaString,
-//});
+type Query {
+  shortURLs: [ShortURL]
+  shortToURL(short: String): ShortURL
+}
 
-//addMockFunctionsToSchema({ schema });
+schema {
+  query: Query
+}
 
-//const query = `
-//query something {
+`;
 
-//}
-//`;
+const schema = makeExecutableSchema({
+  typeDefs: schemaString,
+});
+
+addMockFunctionsToSchema({ schema });
+
+const queryTest = `
+query shortToUrl($shortCode: String) {
+  shortToURL(short: $shortCode) {
+    shortCode,
+    url,
+  }
+}
+`;
+
+const variablesTest = { shortCode: 'short' };
+
+module.exports.response = graphql(schema, queryTest, variablesTest);
 
 module.exports.graphql = (event, context, callback) => {
   const getQuery = R.compose(
@@ -39,7 +66,4 @@ module.exports.graphql = (event, context, callback) => {
   };
 
   callback(null, response);
-
-  // Use this code if you don't use the http event with the LAMBDA-PROXY integration
-  // callback(null, { message: 'Go Serverless v1.0! Your function executed successfully!', event });
 };
