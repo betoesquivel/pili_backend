@@ -31,7 +31,7 @@ input NewShortURLInput {
 }
 
 type Mutation {
-  createShortURL(newShort: NewShortURLInput): ShortURL
+  createShortURL(newShort: NewShortURLInput!): ShortURL
 }
 
 schema {
