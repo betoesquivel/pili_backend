@@ -25,8 +25,18 @@ type Query {
   shortToURL(short: String): ShortURL
 }
 
+input NewShortURLInput {
+  url: String!
+  owner: String
+}
+
+type Mutation {
+  createShortURL(newShort: NewShortURLInput): ShortURL
+}
+
 schema {
   query: Query
+  mutation: Mutation
 }
 
 `;
@@ -37,23 +47,11 @@ const schema = makeExecutableSchema({
 
 addMockFunctionsToSchema({ schema });
 
-const queryTest = `
-query shortToUrl($shortCode: String) {
-  shortToURL(short: $shortCode) {
-    shortCode,
-    url,
-  }
-}
-`;
-
-const variablesTest = { shortCode: 'short' };
-
-module.exports.response = graphql(schema, queryTest, variablesTest);
-
 module.exports.graphql = (event, context, callback) => {
+  const safeJSONParse = R.tryCatch(JSON.parse, R.always({}));
   const parseJSONProp = R.compose(
-    JSON.parse,
-    R.prop
+    safeJSONParse,
+    R.curry(R.propOr('{}'))
   );
 
   const body = parseJSONProp('body', event);
@@ -62,6 +60,7 @@ module.exports.graphql = (event, context, callback) => {
   const queryPromise = graphql(schema, query, variables);
 
   queryPromise.then(result => {
+    console.log(` Done...  ${result}`);
     const responseBody = { query, variables, result };
     const response = {
       statusCode: 200,

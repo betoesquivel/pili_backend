@@ -15,3 +15,13 @@ var event = {
 handler.graphql(event, null, (e, d) => extract(d))
 
 r
+
+var R = require('ramda');
+var parseJSONProp = R.compose(R.tryCatch(JSON.parse, R.always({})),
+  R.curry(R.propOr(null)));
+
+parseJSONProp('something', {something: ''})
+
+R.curry(R.propOr(null))('aProp', {})
+
+R.tryCatch(JSON.parse, R.)('')
