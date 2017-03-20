@@ -2,6 +2,12 @@
 
 const R = require('ramda');
 const graphql = require('graphql').graphql;
+const uuid = require('uuid');
+const shortid = require('shortid');
+const dynamoBuilder = require('./dynamo_builder.js');
+const AWS = require('aws-sdk');
+AWS.config.region = 'us-west-2';
+const db = new AWS.DynamoDB.DocumentClient();
 
 const tools = require('graphql-tools');
 const makeExecutableSchema = tools.makeExecutableSchema;
@@ -20,9 +26,14 @@ type ShortURL {
   createdOn: String
 }
 
+input ShortKeyInput {
+  shortCode: String!
+  owner: String
+}
+
 type Query {
-  shortURLs: [ShortURL]
-  shortToURL(short: String): ShortURL
+  shortURLs(owner: String): [ShortURL]
+  shortToURL(shortKey: ShortKeyInput!): ShortURL
 }
 
 input NewShortURLInput {
@@ -41,11 +52,58 @@ schema {
 
 `;
 
+const shortenURL = function shortenURL(urlAndOwner) {
+  const now = new Date(Date.now());
+  const nowStr = now.toISOString();
+  const id = uuid();
+  const shortCode = shortid.generate();
+  return R.merge({
+    id,
+    shortCode,
+    lastVisited: nowStr,
+    lastUpdated: nowStr,
+    createdOn: nowStr,
+    visits: 0,
+  }, urlAndOwner);
+};
+
+const resolvers = {
+  Query: {
+    shortURLs(obj, args) {
+      const owner = R.propOr('public', 'owner', args);
+      const request = dynamoBuilder.shortURLsByOwner({owner}, {})(db);
+      return request;
+    },
+    shortToURL(obj, args) {
+      const withOwner = R.merge(
+        { owner: 'public' },
+        args
+      );
+      const request = dynamoBuilder.shortURLsByOwner(withOwner, {})(db);
+      return request.then(R.last);
+    },
+  },
+  Mutation: {
+    createShortURL(obj, args) {
+      const urlAndOwner = R.merge({
+        owner: 'public',
+      }, args.newShort);
+      const shortURL = shortenURL(urlAndOwner);
+      const putPromise =  dynamoBuilder.putItem(shortURL, {})(db);
+      return putPromise;
+    }
+  },
+};
+
 const schema = makeExecutableSchema({
+  resolvers,
   typeDefs: schemaString,
 });
 
-addMockFunctionsToSchema({ schema });
+addMockFunctionsToSchema({
+ schema,
+ preserveResolvers: true,
+});
 
 module.exports.graphql = (event, context, callback) => {
   const safeJSONParse = R.tryCatch(JSON.parse, R.always({}));
@@ -69,3 +127,5 @@ module.exports.graphql = (event, context, callback) => {
     callback(null, response);
   }).catch(callback);
 };
+
+module.exports.shortenURL = shortenURL;

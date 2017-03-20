@@ -24,4 +24,37 @@ parseJSONProp('something', {something: ''})
 
 R.curry(R.propOr(null))('aProp', {})
 
-R.tryCatch(JSON.parse, R.)('')
+R.tryCatch(JSON.parse, R.always({}))('')
+
+
+var handler = require('./handler');
+var shorten = handler.shortenURL;
+var builder = require('./dynamo_builder.js')
+var AWS = require('aws-sdk');
+var db = new AWS.DynamoDB.DocumentClient();
+var extract = r => this.r = r;
+db
+shorten
+
+var shortURL = shorten({
+  url: 'www.google.com',
+  owner: 'public',
+})
+shortURL
+
+builder.putItem(shortURL, {})(db).then(extract, extract);
+
+r
+
+builder.shortURLsByOwner({owner: 'public'}, {})(db).then(extract, extract);
+
+builder.shortURLsByOwner({
+  owner: 'public',
+  shortCode: 'r1rhJgail'
+}, {})(db).then(extract, extract);
+
+var R = require('ramda');
+
+R.compose( R.when( R.isEmpty, R.always({})), R.take(1))(r)
+
+r.then( R.compose( R.when( R.isEmpty, R.always({})), R.take(1)));
