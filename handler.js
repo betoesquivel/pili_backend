@@ -60,7 +60,6 @@ module.exports.graphql = (event, context, callback) => {
   const queryPromise = graphql(schema, query, variables);
 
   queryPromise.then(result => {
-    console.log(` Done...  ${result}`);
     const responseBody = { query, variables, result };
     const response = {
       statusCode: 200,
@@ -68,5 +67,5 @@ module.exports.graphql = (event, context, callback) => {
     };
 
     callback(null, response);
-  });
+  }).catch(callback);
 };
