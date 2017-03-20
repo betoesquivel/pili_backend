@@ -50,14 +50,14 @@ addMockFunctionsToSchema({ schema });
 module.exports.graphql = (event, context, callback) => {
   const safeJSONParse = R.tryCatch(JSON.parse, R.always({}));
   const parseJSONProp = R.compose(
-    safeJSONParse,
-    R.curry(R.propOr('{}'))
+    R.unless(R.is(Object), safeJSONParse),
+    R.curry(R.propOr({}))
   );
 
   const body = parseJSONProp('body', event);
   const query = R.prop('query', body);
   const variables = parseJSONProp('variables', body);
-  const queryPromise = graphql(schema, query, variables);
+  const queryPromise = graphql(schema, query, null, null, variables);
 
   queryPromise.then(result => {
     const responseBody = { query, variables, result };
