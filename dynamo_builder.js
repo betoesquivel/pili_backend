@@ -69,9 +69,11 @@ const shortURLsByOwner = function shortURLsByOwner(shortKey, queryParams) {
 };
 
 const visitShortURL = function visitShortURL(shortURL, customParams) {
-  const UpdateExpression = 'set visits = visits + :increment'
+  const now = new Date(Date.now());
+  const UpdateExpression = 'set visits = visits + :increment, lastVisited = :now'
   const ExpressionAttributeValues = {
     ':increment': 1,
+    ':now': now.toISOString(),
   };
   const updateParams = {
     Key: shortURL,
@@ -83,7 +85,7 @@ const visitShortURL = function visitShortURL(shortURL, customParams) {
     'update',
     updateParams,
     customParams
-  )(db).then(R.prop('Item'));
+  )(db).then(R.prop('Attributes'));
 }
 
 module.exports = {

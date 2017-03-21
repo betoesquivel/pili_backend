@@ -45,8 +45,6 @@ shortURL
 
 builder.putItem(shortURL, {})(db).then(extract, extract);
 
-r
-
 builder.shortURLsByOwner({owner: 'public'}, {})(db).then(extract, extract);
 
 builder.shortURLsByOwner({
@@ -54,14 +52,8 @@ builder.shortURLsByOwner({
   shortCode: 'r1rhJgail'
 }, {})(db).then(extract, extract);
 
-
-R.last(r)
-
-r.then( R.last);
-
-var Key = R.pick(['id'], s)
+var Key = {id: '1cf96fb9-4500-419b-bba5-0dc82092a444'}
 Key
-
 
 builder.visitShortURL(Key, {})(db).then(extract, extract)
 
