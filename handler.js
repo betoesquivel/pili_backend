@@ -89,8 +89,17 @@ const resolvers = {
         { owner: 'public' },
         args
       );
-      const request = dynamoBuilder.shortURLsByOwner(withOwner, {})(db);
-      return request.then(R.last);
+      const shortURL = dynamoBuilder.shortURLsByOwner(withOwner, {})(db)
+        .then(R.last);
+      const visit = shortURL
+        .then((shortURL) => {
+          if (R.isEmpty(shortURL)) {
+            return {};
+          } else {
+            return dynamoBuilder.visitShortURL(R.pick(['id'], shortURL))(db);
+          }
+        });
+      return visit;
     },
   },
 };
