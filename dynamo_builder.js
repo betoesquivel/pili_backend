@@ -76,7 +76,7 @@ const visitShortURL = function visitShortURL(shortURL, customParams) {
     ':now': now.toISOString(),
   };
   const updateParams = {
-    Key: shortURL,
+    Key: R.pick(['id'], shortURL),
     ReturnValues: 'ALL_NEW',
     UpdateExpression,
     ExpressionAttributeValues,
