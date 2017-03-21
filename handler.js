@@ -26,8 +26,13 @@ type ShortURL {
   createdOn: String
 }
 
+input ShortKeyQueryInput {
+  shortCode: String
+  owner: String
+}
+
 type Query {
-  shortURLs(owner: String): [ShortURL]
+  shortURLs(shortKey: ShortKeyQueryInput!): [ShortURL]
 }
 
 input NewShortURLInput {
@@ -67,12 +72,28 @@ const shortenURL = function shortenURL(urlAndOwner) {
   }, urlAndOwner);
 };
 
+const shortKeyInputToShortURL = function shortCodeToShortURL(shortKey){
+  const withOwner = R.merge(
+    { owner: 'public' },
+    shortKey
+  );
+  const shortURL = dynamoBuilder.shortURLsByOwner(withOwner, {})(db)
+  return shortURL;
+}
+
 const resolvers = {
   Query: {
     shortURLs(obj, args) {
-      const owner = R.propOr('public', 'owner', args);
-      const request = dynamoBuilder.shortURLsByOwner({owner}, {})(db);
-      return request;
+      const Keys = shortKeyInputToShortURL(args.shortKey)
+        .then(R.pluck('id'))
+        .then(R.map(R.objOf('id')))
+
+      const fetchItem = Key => (
+        dynamoBuilder.getItem(Key, {})(db)
+      );
+      const items = Keys
+        .then(R.map(fetchItem));
+      return items;
     },
   },
   Mutation: {
@@ -85,11 +106,7 @@ const resolvers = {
       return putPromise;
     },
     visitShortURL(obj, args) {
-      const withOwner = R.merge(
-        { owner: 'public' },
-        args
-      );
-      const shortURL = dynamoBuilder.shortURLsByOwner(withOwner, {})(db)
+      const shortURL = shortKeyInputToShortURL(args.shortKey)
         .then(R.last);
       const visit = shortURL
         .then((shortURL) => {
