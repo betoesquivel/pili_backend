@@ -27,6 +27,7 @@ R.curry(R.propOr(null))('aProp', {})
 R.tryCatch(JSON.parse, R.always({}))('')
 
 
+var R = require('ramda');
 var handler = require('./handler');
 var shorten = handler.shortenURL;
 var builder = require('./dynamo_builder.js')
@@ -53,8 +54,15 @@ builder.shortURLsByOwner({
   shortCode: 'r1rhJgail'
 }, {})(db).then(extract, extract);
 
-var R = require('ramda');
 
-R.compose( R.when( R.isEmpty, R.always({})), R.take(1))(r)
+R.last(r)
 
-r.then( R.compose( R.when( R.isEmpty, R.always({})), R.take(1)));
+r.then( R.last);
+
+var Key = R.pick(['id'], s)
+Key
+
+
+builder.visitShortURL(Key, {})(db).then(extract, extract)
+
+r

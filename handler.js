@@ -26,14 +26,8 @@ type ShortURL {
   createdOn: String
 }
 
-input ShortKeyInput {
-  shortCode: String!
-  owner: String
-}
-
 type Query {
   shortURLs(owner: String): [ShortURL]
-  shortToURL(shortKey: ShortKeyInput!): ShortURL
 }
 
 input NewShortURLInput {
@@ -41,8 +35,14 @@ input NewShortURLInput {
   owner: String
 }
 
+input ShortKeyInput {
+  shortCode: String!
+  owner: String
+}
+
 type Mutation {
   createShortURL(newShort: NewShortURLInput!): ShortURL
+  visitShortURL(shortKey: ShortKeyInput!): ShortURL
 }
 
 schema {
@@ -74,14 +74,6 @@ const resolvers = {
       const request = dynamoBuilder.shortURLsByOwner({owner}, {})(db);
       return request;
     },
-    shortToURL(obj, args) {
-      const withOwner = R.merge(
-        { owner: 'public' },
-        args
-      );
-      const request = dynamoBuilder.shortURLsByOwner(withOwner, {})(db);
-      return request.then(R.last);
-    },
   },
   Mutation: {
     createShortURL(obj, args) {
@@ -91,7 +83,15 @@ const resolvers = {
       const shortURL = shortenURL(urlAndOwner);
       const putPromise =  dynamoBuilder.putItem(shortURL, {})(db);
       return putPromise;
-    }
+    },
+    visitShortURL(obj, args) {
+      const withOwner = R.merge(
+        { owner: 'public' },
+        args
+      );
+      const request = dynamoBuilder.shortURLsByOwner(withOwner, {})(db);
+      return request.then(R.last);
+    },
   },
 };
 

@@ -68,8 +68,27 @@ const shortURLsByOwner = function shortURLsByOwner(shortKey, queryParams) {
   )(db).then(R.prop('Items'));
 };
 
+const visitShortURL = function visitShortURL(shortURL, customParams) {
+  const UpdateExpression = 'set visits = visits + :increment'
+  const ExpressionAttributeValues = {
+    ':increment': 1,
+  };
+  const updateParams = {
+    Key: shortURL,
+    ReturnValues: 'ALL_NEW',
+    UpdateExpression,
+    ExpressionAttributeValues,
+  };
+  return db => dynamoCall(
+    'update',
+    updateParams,
+    customParams
+  )(db).then(R.prop('Item'));
+}
+
 module.exports = {
   putItem,
   getItem,
   shortURLsByOwner,
+  visitShortURL,
 };
