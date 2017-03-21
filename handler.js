@@ -126,15 +126,25 @@ module.exports.graphql = (event, context, callback) => {
   const variables = parseJSONProp('variables', body);
   const queryPromise = graphql(schema, query, null, null, variables);
 
-  queryPromise.then(result => {
-    const responseBody = { query, variables, result };
-    const response = {
-      statusCode: 200,
-      body: JSON.stringify(responseBody),
-    };
+  const baseResponse = {
+    statusCode: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    },
+  };
 
-    callback(null, response);
-  }).catch(callback);
+  queryPromise
+    .then(result => {
+      const response = R.merge(baseResponse, {
+        body: JSON.stringify(result),
+      });
+
+      callback(null, response);
+    })
+    .catch(e => callback(
+      null,
+      R.merge(baseResponse, {statusCode: 501, errorMessage: e})
+    ));
 };
 
 module.exports.shortenURL = shortenURL;
